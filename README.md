@@ -25,4 +25,4 @@ const { QnListPage } = require('antd-queen') ;
 
 ## License
 
-MIT © [Mo9 Front End]()
+MIT © [Mo9 Front End](https://github.com/daodaoApp)
