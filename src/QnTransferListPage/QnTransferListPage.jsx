@@ -3,7 +3,7 @@ import propTypes from 'prop-types';
 import { Tabs, Button, Transfer, Switch } from 'antd';
 import './QnTransferListPage.less';
 import { Link } from 'dva/router';
-import QnTable from './QnTable';
+import QnTable from '../QnTable/QnTable';
 import QnFilter from '../QnFilter/QnFilter';
 import QnFormModal from '../QnFormModal/QnFormModal';
 import QnTableWithSummary from '../QnTableWithSummary/QnTableWithSummary';
