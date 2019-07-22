@@ -1,18 +1,26 @@
-// version:1.0.0
-// updated:2017-12-8 14:21:26
-
-
-import React, { Component } from 'react';
+/* eslint-disable react/destructuring-assignment */
+import React, { Component, Fragment } from 'react';
 import propTypes from 'prop-types';
 import {
-  Modal, Button, Input, InputNumber,
-  DatePicker, Form, Tooltip, Icon,
+  Modal,
+  Button,
+  Input,
+  InputNumber,
+  DatePicker,
+  Form,
+  Tooltip,
+  Icon,
+  Spin,
+  Row,
+  Col,
 } from 'antd';
-import QnSelect from '../QnSelect/QnSelect';
-import QnListTagAdder from '../QnListTagAdder/QnListTagAdder';
+import QnSelect from '../QnSelect/QnSelect.jsx';
+import QnListTagAdder from '../QnListTagAdder/QnListTagAdder.jsx';
+import QnUpload from '../QnUpload/QnUpload.jsx';
 // import './QnFormModal.less';
 const log = console.log.bind(console);
 const FormItem = Form.Item;
+
 class QnFormModal extends Component {
   constructor(props) {
     super(props);
@@ -20,16 +28,15 @@ class QnFormModal extends Component {
       visible: false,
     };
   }
-  componentDidMount() { }
+  componentDidMount() {}
+
   componentWillReceiveProps(nextProps) {
     // const isChanged = (name) => {
     //   return (this.props[name] !== nextProps[name]);
     // };
     // if (isChanged('formDict')) {
-
     // }
   }
-
 
   handleTriggerBtnClick = () => {
     const { handleTriggerClick, isShow } = this.props;
@@ -47,32 +54,45 @@ class QnFormModal extends Component {
     } else if (!isShow) {
       this.setState({ visible: true });
     }
-  }
+  };
 
   handleModalOk = () => {
     this.props.form.validateFields((error, values) => {
       if (!error) {
-        this.setState({ visible: false });
         if (typeof this.props.handleOk === 'function') {
-          this.props.handleOk(values);
-          if (this.props.resetAfterSuccess) {
-            this.props.form.resetFields();
+          const result = this.props.handleOk(values);
+          if (result instanceof Promise) {
+            result.then(() => {
+              this.handleOkAfterSubmit();
+            });
+          } else {
+            this.handleOkAfterSubmit();
           }
         }
       }
     });
-  }
+  };
+
+  handleOkAfterSubmit = () => {
+    if (this.props.ifResetAfterSuccess) {
+      this.props.form.resetFields();
+    }
+    this.setState({ visible: false });
+  };
 
   handleModalCancel = () => {
     this.setState({
       visible: false,
     });
-  }
-  genFormItem = (itemData, dataDict, initValueObj) => {
+  };
+
+  genFormItem = (itemData, dataDict, initialValueObj) => {
     const { getFieldDecorator } = this.props.form;
     const inputLayout = {
       style: { width: '100%' },
     };
+
+    const { rowsNumber } = this.props;
 
     // log('itemData', itemData);
     const name = typeof itemData === 'string' ? itemData : itemData.name;
@@ -81,122 +101,123 @@ class QnFormModal extends Component {
     const { tag, title } = dataDict[name];
     const rules = dataDict[name].rules || [];
 
-    const otherPropsOfForm = (typeof itemData.otherProps === 'undefined') ? {} : itemData.otherProps;
-    const otherPropsOfDict = (typeof dataDict[name].otherProps === 'undefined') ? {} : dataDict[name].otherProps;
+    const otherPropsOfForm = typeof itemData.otherProps === 'undefined' ? {} : itemData.otherProps;
+    const otherPropsOfDict =
+      typeof dataDict[name].otherProps === 'undefined' ? {} : dataDict[name].otherProps;
     const itemProps = { ...inputLayout, ...otherPropsOfDict, ...otherPropsOfForm };
     // log('itemProps', { ...otherPropsOfDict, ...otherPropsOfForm });
     const formPartDict = {
-      Input: (
-        <Input
-          {...itemProps}
-        />),
-      InputNumber: (
-        <InputNumber
-          {...itemProps}
-        />),
-      DatePicker: (
-        <DatePicker
-          {...itemProps}
-        />),
-      QnSelect: (
-        <QnSelect
-          {...itemProps}
-          options={dataDict[name].options}
-        />),
-      Select: (
-        <QnSelect
-          {...itemProps}
-          options={dataDict[name].options}
-        />),
-      QnListTagAdder:
-        (<QnListTagAdder {...itemProps} />),
+      Input: <Input {...itemProps} />,
+      InputNumber: <InputNumber {...itemProps} />,
+      DatePicker: <DatePicker {...itemProps} />,
+      QnSelect: <QnSelect {...itemProps} options={dataDict[name].options} />,
+      Select: <QnSelect {...itemProps} options={dataDict[name].options} />,
+      QnListTagAdder: <QnListTagAdder {...itemProps} />,
+      File: <QnUpload {...itemProps} />,
     };
 
     const formPart = formPartDict[tag];
-    // const formPart = (<Input />);
-
     // 空对象在索引不存在的key值时, 会返回undefined ,但null和undefind若索引会报错并卡死
-    const initValues = initValueObj || {};
+    const initialValue = initialValueObj || {};
     const formItemLayout = {
       labelCol: { span: 7 },
       wrapperCol: { span: 14 },
     };
+
     return (
-      <FormItem
-        {...formItemLayout}
-        label={title}
-        key={name}
-      >
-        {
-          getFieldDecorator(name, {
+      <Col span={Math.ceil(24 / rowsNumber)} key={name}>
+        <FormItem {...formItemLayout} label={title}>
+          {getFieldDecorator(name, {
             // valuePropName: 'value',
-            initialValue: (typeof initValues[name] === 'undefined') ? undefined : initValues[name],
+            initialValue:
+              typeof initialValue[name] === 'undefined' ? undefined : initialValue[name],
             rules,
-          })(formPart)
-        }
-      </FormItem>
+          })(formPart)}
+        </FormItem>
+      </Col>
     );
-  }
-  genFormItems = (itemDataArr, dataDict, initValueObj) => {
+  };
+
+  genFormItems = (itemDataArr, dataDict, initialValueObj, rowSplitTitleDict) => {
     if (Array.isArray(itemDataArr) && itemDataArr.length > 0) {
       const items = [];
       for (let i = 0; i < itemDataArr.length; i += 1) {
-        items.push(this.genFormItem(itemDataArr[i], dataDict, initValueObj));
+        if (rowSplitTitleDict) {
+          if (rowSplitTitleDict[i]) {
+            items.push(
+              <Col span={24} style={{ paddingBottom: '10px' }} key={i}>
+                {i !== 0 ? <hr style={{ marginBottom: '20px' }} /> : ''}
+                <b>{rowSplitTitleDict[i]}</b>
+              </Col>,
+            );
+          }
+        }
+        items.push(this.genFormItem(itemDataArr[i], dataDict, initialValueObj));
       }
-      return items;
+      return <Row>{items}</Row>;
     }
-  }
+  };
 
-  getAllFormItemsFromDict = (dict) => {
+  getAllFormItemsFromDict = dict => {
     const items = [];
     for (const itemKey in dict) {
       if (Object.prototype.hasOwnProperty.call(dict, itemKey)) {
         items.push({ name: itemKey });
       }
     }
-    // console.log('getAllFormItemsFromDict items------->', items);
     return items;
-  }
+  };
 
   render() {
+    const {
+      triggerType,
+      buttonProps,
+      formItems,
+      formInitialValueObj,
+      hasTooltip,
+      title,
+      ifShowFormLoading,
+      formDict,
+      triggerTitle,
+      otherProps,
+      width,
+      rowSplitTitleDict,
+    } = this.props;
+
     let trigger = null;
-    if (this.props.triggerType === 'button') {
+    if (triggerType === 'button') {
       trigger = (
-        <Button
-          {...this.props.buttonProps}
-          className="triggerBtn"
-          onClick={this.handleTriggerBtnClick}
-        >{this.props.buttonProps.title}
-        </Button>);
-    } else if (this.props.triggerType === 'a') {
-      trigger = (
-        <a
-          onClick={this.handleTriggerBtnClick}
-        >
-          {this.props.triggerTitle}
-        </a>);
+        <Button {...buttonProps} className="triggerBtn" onClick={this.handleTriggerBtnClick}>
+          {buttonProps.title}
+        </Button>
+      );
+    } else if (triggerType === 'a') {
+      trigger = <a onClick={this.handleTriggerBtnClick}>{triggerTitle}</a>;
     }
 
-    const itemDataArr = this.props.formItems || this.getAllFormItemsFromDict(this.props.formDict);
-    const formItems = this.genFormItems(itemDataArr, this.props.formDict, this.props.formInitValueObj);
+    const itemDataArr = formItems || this.getAllFormItemsFromDict(formDict);
+    const formItemData = this.genFormItems(
+      itemDataArr,
+      formDict,
+      formInitialValueObj,
+      rowSplitTitleDict,
+    );
+
     return (
       <span className="QnFormModal">
-        {
-          this.props.hasTooltip ?
-            (<Tooltip title={this.props.title}>
-              {trigger}
-            </Tooltip>)
-            : trigger
-        }
+        {hasTooltip ? <Tooltip title={title}>{trigger}</Tooltip> : trigger}
         <Modal
           className="mainModal"
-          title={this.props.title}
+          title={title}
           visible={this.state.visible}
           onOk={this.handleModalOk}
           onCancel={this.handleModalCancel}
+          maskClosable={false}
+          width={width}
           closable
+          {...otherProps}
         >
-          {formItems}
+          <Spin spinning={ifShowFormLoading}>{formItemData}</Spin>
         </Modal>
       </span>
     );
@@ -206,7 +227,12 @@ QnFormModal.propTypes = {};
 QnFormModal.defaultProps = {
   title: '打开modal',
   triggerType: 'button', // 触发器的样式 可以是button | a,
-  triggerTitle: (<span><Icon type="edit" />打开modal</span>),
+  triggerTitle: (
+    <span>
+      <Icon type="edit" />
+      打开modal
+    </span>
+  ),
   buttonProps: {
     type: 'primary',
     icon: 'plus',
@@ -214,18 +240,59 @@ QnFormModal.defaultProps = {
   },
   handleTriggerClick: null,
   isShow: null,
-  handleOk: null,
-  // formItems:格式 [
-  //   { name: 'roleName' },
-  //   { name: 'permissions' },
-  //   { name: 'isAdmin' },
-  // ],
+  handleOk: () => {},
+  // formItems:格式
+  // [
+  //   {
+  //     name: 'tagName',
+  //     otherProps: {},
+  //   },
+  //   {
+  //     name: 'tagSort',
+  //   },
+  //   {
+  //     name: 'speaker',
+  //   },
+  // ];
   formItems: null,
+  // formItems 格式
+  // tagSort: {
+  //   title: '标签分类',
+  //   options: [
+  //     {
+  //       title: '客户画像',
+  //       name: "portrait",
+  //     },
+  //     {
+  //       title: '客户资料',
+  //       name: "info",
+  //     },
+  //     {
+  //       title: '话术标签',
+  //       name: "tag",
+  //     },
+  //   ],
+  //   tag: 'QnSelect',
+  //   rules: [
+  //     {
+  //       required: true,
+  //       message: '标签分类不能为空',
+  //     },
+  //   ],
+  //   otherProps: {
+  //     nameKey: 'id',
+  //     valueKey: 'name',
+  //   },
+  // },
   formDict: null,
-  formInitValueObj: null,
+  formInitialValueObj: null,
   hasTooltip: false,
   // creditorList: [],
-  resetAfterSuccess: true,
+  ifResetAfterSuccess: true,
+  ifShowFormLoading: false,
+  width: 500,
+  rowsNumber: 1,
+  rowSplitTitleDict: null,
 };
 
 export default Form.create()(QnFormModal);

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import { Modal, Button } from 'antd';
-import './QnModal.scss';
 
 class QnModal extends Component {
   constructor(props) {
@@ -12,9 +11,9 @@ class QnModal extends Component {
     this.trigger = this.getTrigger();
   }
 
-  componentDidMount() { }
+  componentDidMount() {}
 
-  componentWillReceiveProps(nextProps) { }
+  componentWillReceiveProps(nextProps) {}
 
   getTrigger = () => {
     let trigger = null;
@@ -28,27 +27,22 @@ class QnModal extends Component {
       };
       const settings = buttonProps || defaultButtonProps;
       trigger = (
-        <Button
-          onClick={this.handleTriggerClick}
-          {...settings}
-        >
+        <Button onClick={this.handleTriggerClick} {...settings}>
           {title}
-        </Button>);
+        </Button>
+      );
     } else {
       const settings = aProps;
       trigger = (
-        <a
-          {...settings}
-          onClick={this.handleTriggerClick}
-        >
+        <a {...settings} onClick={this.handleTriggerClick}>
           {title}
         </a>
       );
     }
     return trigger;
-  }
+  };
 
-  handleTriggerClick = (e) => {
+  handleTriggerClick = e => {
     e.preventDefault();
     if (this.props.isDisableTrigger) {
       return;
@@ -57,20 +51,20 @@ class QnModal extends Component {
       this.props.handleOpen();
     }
     this.setState({ visible: true });
-  }
+  };
 
   handleModalOk = () => {
     const { handleOk, ifNeedSyncVerification } = this.props;
 
     if (ifNeedSyncVerification) {
-      handleOk().then((flag) => {
+      handleOk().then(flag => {
         this.setState({ visible: flag });
       });
     } else {
       handleOk();
       this.setState({ visible: false });
     }
-  }
+  };
 
   handleModalCancel = () => {
     if (typeof this.props.handleCancel === 'function') {
@@ -79,13 +73,10 @@ class QnModal extends Component {
     this.setState({
       visible: false,
     });
-  }
-
+  };
 
   render() {
-    const {
-      otherProps, className, okText, cancelText, maskClosable, width,
-    } = this.props;
+    const { otherProps, className, okText, cancelText, maskClosable, width } = this.props;
     const { display, footer } = otherProps;
     // const childrenWithProps = React.Children.map(this.props.children,
     //   child => React.cloneElement(child, { cancelModal: this.handleModalCancel }));
@@ -108,7 +99,6 @@ class QnModal extends Component {
         >
           {this.props.children}
         </Modal>
-
       </div>
     );
   }
@@ -119,17 +109,17 @@ QnModal.defaultProps = {
   title: '打开modal',
   // 触发modal打开的, 可能是button或者a标签
   triggerType: 'button', // |a
-  triggerTitle: (<span>打开modal</span>),
+  triggerTitle: <span>打开modal</span>,
   buttonProps: null,
   aProps: null,
   maskClosable: false,
   isDisableTrigger: false,
   otherProps: {},
-  handleOk: () => { },
-  handleCancel: () => { },
+  handleOk: () => {},
+  handleCancel: () => {},
   okText: 'OK',
   cancelText: 'Cancel',
-  handleOpen: () => { },
+  handleOpen: () => {},
   width: 520,
 
   // 如果有验证，则验证失败时不能关闭弹框，默认验证失败

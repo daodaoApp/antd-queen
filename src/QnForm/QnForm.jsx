@@ -1,12 +1,20 @@
+/* eslint-disable react/destructuring-assignment */
 import React, { Component } from 'react';
 import propTypes from 'prop-types';
-import { Form, Input, InputNumber, DatePicker, Row, Col, Button, TimePicker, Popconfirm, Radio } from 'antd';
-// import QnSelect from '../../utils/QueenAnt/QnSelect';
-// import QnListTagAdder from '../../utils/QueenAnt/QnListTagAdder';
+import {
+  Form,
+  Input,
+  InputNumber,
+  DatePicker,
+  Row,
+  Col,
+  Button,
+  TimePicker,
+  Popconfirm,
+  Radio,
+} from 'antd';
 import QnSelect from '../QnSelect/QnSelect';
 import QnListTagAdder from '../QnListTagAdder/QnListTagAdder';
-// import './QnForm.less';
-// import log from '../log';
 
 const FormItem = Form.Item;
 
@@ -17,11 +25,14 @@ class QnForm extends Component {
       items: this.genItems(this.props.formItems, this.props.formDict, this.props.formValues),
     };
   }
-  componentDidMount() { }
+
+  componentDidMount() {}
+
   componentWillReceiveProps(nextProps) {
     const items = this.genItems(nextProps.formItems, nextProps.formDict, nextProps.formValues);
     this.setState({ items });
   }
+
   onSubmit = () => {
     this.props.form.validateFieldsAndScroll((errors, values) => {
       if (!errors) {
@@ -30,7 +41,8 @@ class QnForm extends Component {
         }
       }
     });
-  }
+  };
+
   onPreview = () => {
     this.props.form.validateFieldsAndScroll((errors, values) => {
       if (!errors) {
@@ -39,35 +51,31 @@ class QnForm extends Component {
         }
       }
     });
-  }
+  };
 
   getSubmitPart = () => {
     if (this.props.needConfirm) {
       return (
-        <Popconfirm
-          title={`操作不可撤销, 确定${this.props.submitBtn}?`}
-          onConfirm={this.onSubmit}
-        >
-          <Button
-            type="primary"
-            style={{ marginRight: '1rem' }}
-          >
+        <Popconfirm title={`操作不可撤销, 确定${this.props.submitBtn}?`} onConfirm={this.onSubmit}>
+          <Button type="primary" style={{ marginRight: '1rem' }}>
             {this.props.submitBtn || '提交'}
           </Button>
-        </Popconfirm >
+        </Popconfirm>
       );
     } else {
-      return (<Button
-        type="primary"
-        onClick={this.onSubmit}
-        size="default"
-
-        style={{ marginRight: '1rem' }}
-      >
-        {this.props.submitBtn || '提交'}
-      </Button>);
+      return (
+        <Button
+          type="primary"
+          onClick={this.onSubmit}
+          size="default"
+          style={{ marginRight: '1rem' }}
+        >
+          {this.props.submitBtn || '提交'}
+        </Button>
+      );
     }
-  }
+  };
+
   getPreviewPart = () => {
     if (this.props.hasPreview) {
       return (
@@ -83,13 +91,14 @@ class QnForm extends Component {
     } else {
       return false;
     }
-  }
+  };
+
   genGroup = (groupItem, dict, allValues) => {
     const children = groupItem.children;
     const len = children.length;
     // columns平均分段
     const span = Math.floor(24 / len);
-    const columns = children.map((o) => {
+    const columns = children.map(o => {
       // 如果没有layout更改默认的layout
       const layout = {
         labelCol: { span: 10 },
@@ -104,12 +113,12 @@ class QnForm extends Component {
         </Col>
       );
     });
-    return (<Row key={`GROUP${children[0].name || children[0]}`} >{columns}</Row>);
-  }
+    return <Row key={`GROUP${children[0].name || children[0]}`}>{columns}</Row>;
+  };
 
   genItems = (formItems, dict, allValues) => {
     if (Array.isArray(formItems) && formItems.length > 0) {
-      return formItems.map((item) => {
+      return formItems.map(item => {
         if (typeof item === 'object' && item.name === 'GROUP') {
           return this.genGroup(item, dict, allValues);
         } else {
@@ -117,7 +126,7 @@ class QnForm extends Component {
         }
       });
     }
-  }
+  };
 
   genItem = (item, dict, allValues, layout = this.props.layout) => {
     const { getFieldDecorator } = this.props.form;
@@ -134,8 +143,9 @@ class QnForm extends Component {
     const { tag, title } = dict[name];
     const rules = dict[name].rules || [];
     // 汇总otherprops
-    const otherPropsOfForm = (typeof setting.otherProps === 'undefined') ? {} : setting.otherProps;
-    const otherPropsOfDict = (typeof dict[name].otherProps === 'undefined') ? {} : dict[name].otherProps;
+    const otherPropsOfForm = typeof setting.otherProps === 'undefined' ? {} : setting.otherProps;
+    const otherPropsOfDict =
+      typeof dict[name].otherProps === 'undefined' ? {} : dict[name].otherProps;
 
     const formItemLayout = setting.layout || layout;
     // 如果otherProps中出现相同的属性, 从setting设置的要高于dict中的设置
@@ -146,17 +156,13 @@ class QnForm extends Component {
       initialValue = allValues[name];
     }
     // 根据tag生成不同的form体
-    const selectTag = (
-      <QnSelect
-        {...inputTagProps}
-        options={dict[name].options}
-      />);
+    const selectTag = <QnSelect {...inputTagProps} options={dict[name].options} />;
     const formPartDict = {
-      Input: (<Input {...inputTagProps} />),
-      InputNumber: (<InputNumber {...inputTagProps} />),
-      DatePicker: (<DatePicker {...inputTagProps} />),
-      TimePicker: (<TimePicker {...inputTagProps} />),
-      QnListTagAdder: (<QnListTagAdder {...inputTagProps} />),
+      Input: <Input {...inputTagProps} />,
+      InputNumber: <InputNumber {...inputTagProps} />,
+      DatePicker: <DatePicker {...inputTagProps} />,
+      TimePicker: <TimePicker {...inputTagProps} />,
+      QnListTagAdder: <QnListTagAdder {...inputTagProps} />,
       Select: selectTag,
       QnSelect: selectTag,
     };
@@ -176,8 +182,7 @@ class QnForm extends Component {
         })(formPart)}
       </FormItem>
     );
-  }
-
+  };
 
   render() {
     // log.log('qnFrom this.props', this.props);
@@ -186,14 +191,11 @@ class QnForm extends Component {
     const submitPart = this.getSubmitPart();
     const previewPart = this.getPreviewPart();
     return (
-      <div className="QnForm" >
-        <Form >
+      <div className="QnForm">
+        <Form>
           {this.state.items}
 
-          <FormItem
-            label="操作"
-            {...formItemLayout}
-          >
+          <FormItem label="操作" {...formItemLayout}>
             {submitPart}
             {previewPart}
 
@@ -201,7 +203,6 @@ class QnForm extends Component {
               {this.props.cancelBtn || '返回'}
             </Button>
           </FormItem>
-
         </Form>
       </div>
     );
@@ -255,21 +256,32 @@ QnForm.defaultProps = {
   //   },
   // ],
   formDict: null,
+  //   tagName: {
+  //   title: '标签名称',
+  //   options: [<span>1</span>, <span>2</span>, <span>3</span>],
+  //   tag: 'Input',
+  //   rules: [
+  //     {
+  //       required: true,
+  //       message:`${this.tagName.title}不能为空`
+  //     },
+  //   ],
+  //   otherProps: {},
+  // },
   formValues: null,
 
   // 按钮文字
   submitBtn: '提交',
-  onSubmit: () => { },
+  onSubmit: () => {},
   needConfirm: false,
 
   cancelBtn: '返回',
-  onCancel: () => { },
-
+  onCancel: () => {},
 
   // 是否有预览按钮
   hasPreview: false,
   previewBtn: '预览',
-  onPreview: () => { },
+  onPreview: () => {},
 
   layout: {
     labelCol: { span: 5 },

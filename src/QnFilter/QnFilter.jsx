@@ -5,20 +5,35 @@ import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import moment from 'moment';
 import {
-  Input, Select, DatePicker, InputNumber,
-  Collapse, Tag, Form, Checkbox, Switch, Row, Col, Button, Icon, Radio,
+  Input,
+  Select,
+  DatePicker,
+  InputNumber,
+  Collapse,
+  Tag,
+  Form,
+  Checkbox,
+  Switch,
+  Row,
+  Col,
+  Button,
+  Icon,
+  Radio,
 } from 'antd';
 // TODO 如果需要支持多语言, 把这里改为引用 react-intl中的<FM>
-import FormattedMessage from '../FM/FM';
+import FormattedMessage from '../FM/FM.jsx';
 import QnSelect from '../QnSelect/QnSelect';
-import './QnFilter.less';
 // import { Group } from '../../../node_modules/_antd@2.13.7@antd/lib/radio';
 // import log from '../log';
+import styles from './QnFilter.less';
+
 const { MonthPicker, RangePicker } = DatePicker;
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
 const Panel = Collapse.Panel;
+
 const log = console.log.bind(console);
+
 // const log = () => { };
 class QnFilter extends Component {
   constructor(props) {
@@ -36,7 +51,7 @@ class QnFilter extends Component {
   // componentDidMount() { }
 
   componentWillReceiveProps(nextProps) {
-    const isChanged = (name) => {
+    const isChanged = name => {
       return this.props[name] !== nextProps[name];
     };
     if (isChanged('rules') || isChanged('col')) {
@@ -61,13 +76,19 @@ class QnFilter extends Component {
       }
     }
     return options;
-  }
+  };
 
   /**
    * 作用:为select控件的值找到对应的名字, 以显示到筛选标签上
    */
-  getLabelFromSelectOptions = (value, options, nameKey = 'label', valueKey = 'value', multiple = false) => {
-    const findName = (itemValue) => {
+  getLabelFromSelectOptions = (
+    value,
+    options,
+    nameKey = 'label',
+    valueKey = 'value',
+    multiple = false,
+  ) => {
+    const findName = itemValue => {
       for (let i = 0; i < options.length; i += 1) {
         const option = options[i];
         if (option[valueKey] === itemValue) {
@@ -109,41 +130,40 @@ class QnFilter extends Component {
         return false;
       }
     }
-  }
+  };
 
   // 生成radio
-  getRadio = (rule) => {
+  getRadio = rule => {
     const { options } = rule;
     return (
-      <RadioGroup onChange={(e) => { this.handleItemChange(e.target.value, rule); }}>
-        {
-          options.map((item) => {
-            const { value, label } = item;
-            return (
-              <Radio
-                key={item.label}
-                value={value}
-              >
-                {label}
-              </Radio>
-            );
-          })
-        }
+      <RadioGroup
+        onChange={e => {
+          this.handleItemChange(e.target.value, rule);
+        }}
+      >
+        {options.map(item => {
+          const { value, label } = item;
+          return (
+            <Radio key={item.label} value={value}>
+              {label}
+            </Radio>
+          );
+        })}
       </RadioGroup>
     );
-  }
+  };
 
   //----------------------------------------------------------------------
   // 用来生成表单的代码
-  getInnerSelect = (rule) => {
+  getInnerSelect = rule => {
     // select 和 QnSelect都用QnSelect来处理
     // 如果是select ,要检测额外的参数, 比如nameKey,valueKey,mode(mode=multiple多选)
     // 要对多选的标签显示进行特殊的处理
     const { nameKey, valueKey, mode } = rule;
     const otherProps = rule.otherProps || {};
     const selectProps = {
-      nameKey: (typeof nameKey === 'undefined') ? 'label' : nameKey,
-      valueKey: (typeof valueKey === 'undefined') ? 'value' : valueKey,
+      nameKey: typeof nameKey === 'undefined' ? 'label' : nameKey,
+      valueKey: typeof valueKey === 'undefined' ? 'value' : valueKey,
     };
     // let initValue;
     if (mode) {
@@ -155,7 +175,7 @@ class QnFilter extends Component {
         width="100%"
         {...selectProps}
         {...otherProps}
-        onChange={(value) => {
+        onChange={value => {
           // 当mode=multiple时候返回的value为一个数组，要将其转为字符串以免引起异常
           let resultValue = '';
           if (value instanceof Array) {
@@ -165,17 +185,20 @@ class QnFilter extends Component {
           }
           this.handleItemChange(resultValue, rule);
         }}
-      />);
+      />
+    );
     return result;
-  }
+  };
 
   // 筛选后, 每个筛选项生成一个tag ,本函数用来做这个tag
   getTag = (name, settings) => {
     let result;
-    const {
-      value, title, tag, otherProps,
-    } = settings;
-    if (typeof value !== 'undefined' && value !== '' && (Array.isArray(value) ? value.length : true)) {
+    const { value, title, tag, otherProps } = settings;
+    if (
+      typeof value !== 'undefined' &&
+      value !== '' &&
+      (Array.isArray(value) ? value.length : true)
+    ) {
       let tagValueToShow = value;
       let defaultFormatDate = 'YYYY-MM-DD';
       if (tag === 'RangePicker') {
@@ -184,7 +207,10 @@ class QnFilter extends Component {
             defaultFormatDate = otherProps.format;
           }
         }
-        tagValueToShow = `${value[0].format(defaultFormatDate)} - ${value[1].format(defaultFormatDate)}`;
+
+        tagValueToShow = `${value[0].format(defaultFormatDate)} - ${value[1].format(
+          defaultFormatDate,
+        )}`;
       } else if (moment.isMoment(value)) {
         if (otherProps) {
           if (otherProps.format) {
@@ -202,12 +228,12 @@ class QnFilter extends Component {
         }
       }
 
-      const timeStamp = (new Date()).getTime();
+      const timeStamp = new Date().getTime();
       const key = `${name}_${value}_${timeStamp}`;
       result = (
         <Tag
           key={key}
-          className="filterTag"
+          className={styles.filterTag}
           color="blue"
           closable
           onClose={() => {
@@ -222,20 +248,25 @@ class QnFilter extends Component {
       );
     }
     return result;
-  }
+  };
 
   // 获取<Select></Select>组件的tag属性值
-  getSelectTagValue = (settings) => {
+  getSelectTagValue = settings => {
     const { mode, value } = settings;
     const nameKey = settings.nameKey || 'label';
     const valueKey = settings.valueKey || 'value';
-    const multiple = (mode === 'multiple');
-    const result = this.getLabelFromSelectOptions(value, settings.options, nameKey, valueKey, multiple);
+    const multiple = mode === 'multiple';
+    const result = this.getLabelFromSelectOptions(
+      value,
+      settings.options,
+      nameKey,
+      valueKey,
+      multiple,
+    );
     return result;
-  }
+  };
 
-
-  getRangePicker = (rule) => {
+  getRangePicker = rule => {
     const { otherProps, name } = rule;
     let type = 'time';
     if (otherProps) {
@@ -271,15 +302,14 @@ class QnFilter extends Component {
         break;
     }
     return result;
-  }
+  };
 
   // 用来产生包在getFieldDecorator里面的表单tag
-  getInnerHtmlTag = (rule) => {
+  getInnerHtmlTag = rule => {
     if (rule && rule.tag) {
       const otherProps = rule.otherProps || {};
       // otherProps.style = { width: '100%' };
-      let innerSelect,
-        innerRadio;
+      let innerSelect, innerRadio;
       if (rule.tag === 'Select' || rule.tag === 'QnSelect') {
         innerSelect = this.getInnerSelect(rule);
       }
@@ -293,10 +323,11 @@ class QnFilter extends Component {
           <Input
             {...otherProps}
             style={{ width: '100%' }}
-            onChange={(e) => {
+            onChange={e => {
               this.handleItemChange(e.target.value, rule);
             }}
-          />),
+          />
+        ),
         DatePicker: (
           <DatePicker
             style={{ width: '100%' }}
@@ -304,13 +335,14 @@ class QnFilter extends Component {
             onChange={(dateMoment, dateStr) => {
               this.handleItemChange(dateMoment, rule);
             }}
-          />),
+          />
+        ),
         RangePicker: this.getRangePicker(rule),
         InputNumber: (
           <InputNumber
             style={{ width: '100%' }}
             {...otherProps}
-            onChange={(value) => {
+            onChange={value => {
               this.handleItemChange(value, rule);
             }}
           />
@@ -320,32 +352,29 @@ class QnFilter extends Component {
         Checkbox: (
           <Checkbox
             {...otherProps}
-            onChange={
-              (e) => {
-                const value = e.target.checked;
-                this.handleItemChange(value, rule);
-              }
-            }
+            onChange={e => {
+              const value = e.target.checked;
+              this.handleItemChange(value, rule);
+            }}
           />
         ),
         Switch: (
           <Switch
             {...otherProps}
-            onChange={
-              (value) => {
-                this.handleItemChange(value, rule);
-              }
-            }
-          />),
+            onChange={value => {
+              this.handleItemChange(value, rule);
+            }}
+          />
+        ),
         Radio: innerRadio,
       };
 
       const item = dict[rule.tag];
       return item;
     }
-  }
+  };
 
-  genFormItem = (rule) => {
+  genFormItem = rule => {
     const { getFieldDecorator } = this.props.form;
     const formItemLayout = {
       labelCol: { span: 10 },
@@ -353,9 +382,7 @@ class QnFilter extends Component {
     };
     // const FormItem = Form.Item;
     if (rule && rule.tag) {
-      const {
-        name, title, initValue: initialValue, required,
-      } = rule;
+      const { name, title, initValue: initialValue, required } = rule;
       // console.log(`genFormItem name ${name}  initValue${initialValue}`);
       // 多数控件的值都是value, 而checkbox和 switch的是checked, 在这里根据tag设置valuePropName来完成适配
       let valuePropName = 'value';
@@ -365,18 +392,19 @@ class QnFilter extends Component {
       let item = null;
       const innerItem = this.getInnerHtmlTag(rule);
       item = (
-        <FormItem
-          {...formItemLayout}
-          key={name}
-          label={title}
-        >
-          {getFieldDecorator(name, { rules: [{ required, message: '不能为空' }], initialValue, valuePropName })(innerItem)}
-        </FormItem>);
+        <FormItem {...formItemLayout} key={name} label={title}>
+          {getFieldDecorator(name, {
+            rules: [{ required, message: '不能为空' }],
+            initialValue,
+            valuePropName,
+          })(innerItem)}
+        </FormItem>
+      );
       return item;
     }
-  }
+  };
 
-  genFormItems = (rules) => {
+  genFormItems = rules => {
     const formItems = [];
     if (rules) {
       for (let i = 0; i < rules.length; i += 1) {
@@ -388,10 +416,10 @@ class QnFilter extends Component {
     // if (Array.isArray(rules) && rules.length > 0) {
     //   return rules.map(rule => this.genFormItem(rule));
     // }
-  }
+  };
   //----------------------------------------------------------------------
 
-  cleanFormValues = (dataObj) => {
+  cleanFormValues = dataObj => {
     const cleanData = {};
     const keys = Object.keys(dataObj);
     // log('dataObj', JSON.stringify(dataObj, null, 2))
@@ -432,9 +460,9 @@ class QnFilter extends Component {
     // }
     // log('cleanData', cleanData);
     return cleanData;
-  }
+  };
 
-  handleTagClose = (settings) => {
+  handleTagClose = settings => {
     const { name, tag, mode } = settings;
     let blankValue;
     switch (tag) {
@@ -451,8 +479,7 @@ class QnFilter extends Component {
     }
     this.props.form.resetFields([name]);
     this.handleItemChange(blankValue, settings);
-  }
-
+  };
 
   handleItemChange = (value, rule) => {
     const { name } = rule;
@@ -464,17 +491,16 @@ class QnFilter extends Component {
 
     this.updateTags(this.tagDict);
     // 清洗数据,并通过回调函数输出
-    if (this.props.triggerType !== 'click'
-      && typeof this.props.handleChange === 'function') {
+    if (this.props.triggerType !== 'click' && typeof this.props.handleChange === 'function') {
       // 此时获取的表单数据中, 没有当前改变的这一项, 所以要手动加进去
       const allValues = this.props.form.getFieldsValue();
       allValues[name] = value;
       this.props.handleChange(this.cleanFormValues(allValues));
     }
-  }
+  };
 
   // 如果筛选规则中有初始值, 则要在第一次渲染时就带有tag
-  getInitTagDict = (rules) => {
+  getInitTagDict = rules => {
     // 找到有初始值的规则
     const rulesWithInitValue = rules.filter(item => typeof (item.initValue !== 'undefined'));
 
@@ -492,7 +518,7 @@ class QnFilter extends Component {
       };
     }
     return tagDict;
-  }
+  };
 
   // getInitTags = (rules) => {
   //   const tagDict = this.getInitTagDict(rules);
@@ -501,7 +527,7 @@ class QnFilter extends Component {
   //   return this.getTags(tagDict);
   // }
 
-  getTags = (dict) => {
+  getTags = dict => {
     const tags = [];
     const keys = Object.keys(dict);
     for (let i = 0; i < keys.length; i += 1) {
@@ -512,12 +538,12 @@ class QnFilter extends Component {
       }
     }
     return tags;
-  }
+  };
 
-  updateTags = (dict) => {
+  updateTags = dict => {
     const tags = this.getTags(dict);
     this.setState({ tags });
-  }
+  };
 
   genArray = (num, content) => {
     if (num > 0) {
@@ -527,7 +553,7 @@ class QnFilter extends Component {
       }
       return arr;
     }
-  }
+  };
 
   splitRules = (rules, col = 2) => {
     if (Array.isArray(rules) && rules.length > 0) {
@@ -545,7 +571,7 @@ class QnFilter extends Component {
     } else {
       return this.genArray(col, undefined);
     }
-  }
+  };
 
   clearFilter = () => {
     this.props.form.resetFields();
@@ -554,7 +580,7 @@ class QnFilter extends Component {
     if (typeof this.props.handleChange === 'function') {
       this.props.handleChange({}, 1);
     }
-  }
+  };
   // getSplitForm = (rules, col = 2) => {
   //   const ruleGroups = this.splitRules(rules, col);
   //   const span = Math.floor(24 / col);
@@ -574,7 +600,7 @@ class QnFilter extends Component {
   //     </Form>);
   // }
 
-  genFilterGroup = (ruleGroups) => {
+  genFilterGroup = ruleGroups => {
     if (Array.isArray(ruleGroups) && ruleGroups.length > 0) {
       const col = ruleGroups.length;
       const span = Math.floor(24 / col);
@@ -586,42 +612,36 @@ class QnFilter extends Component {
             span={span}
           >
             {this.genFormItems(group)}
-          </Col>);
+          </Col>
+        );
       });
       return (
         <Form>
-          <Row>
-            {cols}
-          </Row>
-        </Form>);
+          <Row>{cols}</Row>
+        </Form>
+      );
     }
-  }
+  };
 
   getBtns = (triggerType, hasClearBtn = true) => {
     const clearBtn = hasClearBtn ? (
-      <Button
-        className="clearBtn"
-        icon="close"
-        onClick={this.clearFilter}
-      >
+      <Button className={styles.clearBtn} icon="close" onClick={this.clearFilter}>
         <FormattedMessage id="清空" />
-      </Button>) : null;
-    const searchBtn = triggerType === 'click'
-      ? (
-        <Button
-          icon="search"
-          type="primary"
-          onClick={this.handleSearch}
-        >
+      </Button>
+    ) : null;
+    const searchBtn =
+      triggerType === 'click' ? (
+        <Button icon="search" type="primary" onClick={this.handleSearch}>
           <FormattedMessage id="查询" />
-        </Button>)
-      : null;
+        </Button>
+      ) : null;
     return (
-      <div className="btn-row">
+      <div className={styles.btnRow}>
         {searchBtn}
         {clearBtn}
-      </div>);
-  }
+      </div>
+    );
+  };
 
   handleSearch = () => {
     const query = {};
@@ -638,22 +658,20 @@ class QnFilter extends Component {
     if (triggerType === 'click' && typeof handleChange === 'function') {
       handleChange(query);
     }
-  }
+  };
 
   render() {
     const { hasClearBtn, hasCollapse, hasTag } = this.props;
 
     // TODO 如果一开始就有默认值, 应该先生成一遍tag
     const tagRow = (
-      <div className="filterTagWrapper">
-        <div className="tagsWrapper">
-          {this.state.tags}
-        </div>
+      <div className={styles.filterTagWrapper}>
+        <div className="tagsWrapper">{this.state.tags}</div>
       </div>
     );
 
     const content = (
-      <div className="QnFilter">
+      <div className={styles.QnFilter}>
         {this.genFilterGroup(this.ruleGroups)}
         {hasTag && tagRow}
         {this.getBtns(this.props.triggerType, hasClearBtn)}
@@ -669,12 +687,9 @@ class QnFilter extends Component {
         </span>
       );
       result = (
-        <div className="QnFilter">
+        <div className={styles.QnFilter}>
           <Collapse defaultActiveKey={['filter']}>
-            <Panel
-              key="filter"
-              header={header}
-            >
+            <Panel key="filter" header={header}>
               {content}
             </Panel>
           </Collapse>
@@ -697,10 +712,10 @@ QnFilter.propTypes = {
 };
 
 QnFilter.defaultProps = {
-  handleChange: () => { },
+  handleChange: () => {},
   // triggerType: 'click', // change| click
   triggerType: 'change', // change| click
-  col: 4, // 要能被24整除
+  col: 2, 
   rules: [],
   hasClearBtn: true,
   hasCollapse: true,

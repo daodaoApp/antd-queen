@@ -17,7 +17,7 @@ class QnSelect extends Component {
     }
   }
 
-  componentDidMount() { }
+  componentDidMount() {}
 
   componentWillReceiveProps(nextProps) {
     if (this.props.value !== nextProps.value) {
@@ -25,7 +25,7 @@ class QnSelect extends Component {
     }
   }
 
-  onChange = (value) => {
+  onChange = value => {
     this.setState({ value }, () => {
       if (typeof this.props.onChange === 'function') {
         this.props.onChange(value);
@@ -40,20 +40,24 @@ class QnSelect extends Component {
       for (let i = 0; i < data.length; i += 1) {
         const name = data[i][nameKey];
         const value = data[i][valueKey];
-        options.push(<Option key={`${value}`} value={`${value}`}>{name}</Option>);
+        options.push(
+          <Option key={`${value}`} value={`${value}`}>
+            {name}
+          </Option>
+        );
       }
     }
     return options;
-  }
+  };
 
   filterOption = (input, option) => {
     // console.log('typeof option.props.children------->', typeof option.props.children);
     // console.log('typeof input------->', typeof input);
     return option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-  }
+  };
 
   // 单个数值转换
-  valueToStr = (value) => {
+  valueToStr = value => {
     // if (typeof value === 'string') {
     //   return value;
     // } else if (typeof value === 'number') {
@@ -74,6 +78,8 @@ class QnSelect extends Component {
     // 简化版
     if (typeof value === 'string' || typeof value === 'number') {
       return `${value}`;
+    } else if (typeof value === 'object') {
+      return value;
     } else if (value) {
       log('select传入的值有错误');
       log('typeof value', typeof value);
@@ -82,16 +88,16 @@ class QnSelect extends Component {
     //  else {
     //   return undefined;
     // }
-  }
+  };
 
   // 全部数值转换
-  formatSelectValue = (value) => {
+  formatSelectValue = value => {
     if (Array.isArray(value)) {
       return value.map(item => this.valueToStr(item));
     } else {
       return this.valueToStr(value);
     }
-  }
+  };
 
   render() {
     const filterProps = {
@@ -113,9 +119,7 @@ class QnSelect extends Component {
       }
     }
 
-    const {
-      onChange, options, nameKey, valueKey, disabled,
-    } = this.props;
+    const { onChange, onDeselect, options, nameKey, valueKey, disabled } = this.props;
     return (
       <Select
         className="QnSelect"
@@ -127,6 +131,7 @@ class QnSelect extends Component {
         value={this.formatSelectValue(this.state.value)}
         /* value={this.state.value} */
         onChange={this.onChange}
+        onDeselect={onDeselect}
         disabled={disabled}
       >
         {this.getSelectOptions(options, nameKey, valueKey)}
@@ -136,6 +141,7 @@ class QnSelect extends Component {
 }
 QnSelect.propTypes = {
   onChange: propTypes.func,
+  onDeselect: propTypes.func,
   options: propTypes.array,
   nameKey: propTypes.string,
   // nameKey: propTypes.oneOfType([
@@ -148,7 +154,8 @@ QnSelect.propTypes = {
 };
 
 QnSelect.defaultProps = {
-  onChange: () => { },
+  onChange: () => {},
+  onDeselect: () => {},
   options: [],
   nameKey: 'name', // TODO 使得他可以是一个数组, 会将数组中的数据组合后用来显示
   valueKey: 'value',
